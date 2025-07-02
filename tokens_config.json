@@ -1,0 +1,12 @@
+{
+    "exchange": "bybit",
+    "symbols": [
+        "MILKUSDT",
+        "HUSDT",
+        "MOREUSDT",
+        "SAHARAUSDT",
+        "DMCUSDT",
+        "MAVUSDT",
+        "CUDISUSDT"
+    ]
+}
