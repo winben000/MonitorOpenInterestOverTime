@@ -44,30 +44,60 @@ def format_open_interest_alert(alert_data: dict) -> str:
     alert_type = alert_data['alert_type']
     severity = alert_data['severity']
     timestamp = alert_data['timestamp']
+    avg_oi = alert_data.get('avg_oi', 0.0)  # Get average OI, default to 0 if not provided
     
     # Emoji based on alert type and severity
-    if alert_type == "spike":
-        if severity == "high":
-            emoji = "🚨"
-        elif severity == "medium":
-            emoji = "⚠️"
-        else:
-            emoji = "📈"
-    else:  # drop
-        if severity == "high":
-            emoji = "🔻"
-        elif severity == "medium":
-            emoji = "📉"
-        else:
-            emoji = "🔽"
+    if alert_type.startswith("avg_"):
+        # Average-based alerts
+        base_type = alert_type[4:]  # Remove "avg_" prefix
+        if base_type == "spike":
+            if severity == "high":
+                emoji = "🚨"
+            elif severity == "medium":
+                emoji = "⚠️"
+            else:
+                emoji = "📈"
+        else:  # drop
+            if severity == "high":
+                emoji = "🔻"
+            elif severity == "medium":
+                emoji = "📉"
+            else:
+                emoji = "🔽"
+    else:
+        # Regular alerts
+        if alert_type == "spike":
+            if severity == "high":
+                emoji = "🚨"
+            elif severity == "medium":
+                emoji = "⚠️"
+            else:
+                emoji = "📈"
+        else:  # drop
+            if severity == "high":
+                emoji = "🔻"
+            elif severity == "medium":
+                emoji = "📉"
+            else:
+                emoji = "🔽"
     
-    message = f"{emoji} <b>OPEN INTEREST ALERT</b> {emoji}\n\n"
+    # Determine alert title based on type
+    if alert_type.startswith("avg_"):
+        alert_title = "OPEN INTEREST AVERAGE DEVIATION ALERT"
+        base_type = alert_type[4:]  # Remove "avg_" prefix
+        type_display = f"AVERAGE {base_type.upper()}"
+    else:
+        alert_title = "OPEN INTEREST ALERT"
+        type_display = alert_type.upper()
+    
+    message = f"{emoji} <b>{alert_title}</b> {emoji}\n\n"
     message += f"<b>Token:</b> {symbol}\n"
     message += f"<b>Exchange:</b> {exchange.upper()}\n"
     message += f"<b>Change:</b> {percentage_change:+.2f}%\n"
-    message += f"<b>Current OI:</b> {current_oi:,.0f}\n"
-    message += f"<b>Previous OI:</b> {previous_oi:,.0f}\n"
-    message += f"<b>Type:</b> {alert_type.upper()}\n"
+    message += f"<b>Current OI:</b> ${current_oi:,.0f}\n"
+    message += f"<b>Previous OI:</b> ${previous_oi:,.0f}\n"
+    message += f"<b>Avg OI:</b> ${avg_oi:,.0f}\n"
+    message += f"<b>Type:</b> {type_display}\n"
     message += f"<b>Severity:</b> {severity.upper()}\n"
     message += f"<b>Time:</b> {timestamp}\n\n"
     
@@ -99,7 +129,9 @@ def format_summary_message(alerts: list, total_symbols: int) -> str:
         message += f"<b>{exchange.upper()}</b>:\n"
         for alert in exchange_alert_list[:5]:  # Show top 5 per exchange
             emoji = "🚨" if alert['percentage_change'] > 30 else "⚠️"
-            message += f"  {emoji} {alert['symbol']}: {alert['percentage_change']:+.1f}%\n"
+            current_oi = alert.get('current_oi', 0)
+            avg_oi = alert.get('avg_oi', 0)
+            message += f"  {emoji} {alert['symbol']}: {alert['percentage_change']:+.1f}% (OI: ${current_oi:,.0f}, Avg: ${avg_oi:,.0f})\n"
         message += "\n"
     
     return message 

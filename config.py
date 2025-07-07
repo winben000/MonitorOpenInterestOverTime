@@ -16,9 +16,8 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 TOPIC_ID = os.getenv("TOPIC_ID")
 
 # Open Interest Monitoring Configuration
-SPIKE_THRESHOLD = 30.0  # 30% spike threshold
+SPIKE_THRESHOLD = 5.0  # 5% spike threshold (lowered for more sensitivity)
 MONITORING_INTERVAL = 900  # 15 minutes in seconds
-DATA_RETENTION_HOURS = 24  # Keep data for 24 hours
 
 # Supported exchanges for open interest data
 SUPPORTED_EXCHANGES = ["binance", "bybit"]
