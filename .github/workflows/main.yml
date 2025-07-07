@@ -1,15 +1,33 @@
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
 jobs:
   run_pull:
     runs-on: ubuntu-latest
     steps:
-      - uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Install SSH key
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
-      - name: Trust remote host
-        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          # Write the private key, preserving newlines
+          cat << 'EOF' > ~/.ssh/id_rsa
+${{ secrets.SSH_PRIVATE_KEY }}
+EOF
+          chmod 600 ~/.ssh/id_rsa
+
+          # Add the remote host’s fingerprint so SSH won’t prompt
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Connect & pull
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ${{ secrets.WORK_DIR }} && git pull"
+            "cd ${{ secrets.WORK_DIR }} && \
+             git fetch --all && \
+             git reset --hard origin/${{ secrets.MAIN_BRANCH }}"
+
+      - name: Cleanup
+        run: rm -rf ~/.ssh
