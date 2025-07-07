@@ -3,31 +3,21 @@ on:
     branches:
       - main
   workflow_dispatch:
-
+  
 jobs:
   run_pull:
+    name: run pull
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Install SSH key
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
-          # Write the private key, preserving newlines
-          cat << 'EOF' > ~/.ssh/id_rsa
-${{ secrets.SSH_PRIVATE_KEY }}
-EOF
-          chmod 600 ~/.ssh/id_rsa
-
-          # Add the remote host’s fingerprint so SSH won’t prompt
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Connect & pull
-        run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ${{ secrets.WORK_DIR }} && \
-             git fetch --all && \
-             git reset --hard origin/${{ secrets.MAIN_BRANCH }}"
-
-      - name: Cleanup
-        run: rm -rf ~/.ssh
+    - name: install ssh keys
+      # check this thread to understand why its needed:
+      # https://stackoverflow.com/a/70447517
+      run: |
+        install -m 600 -D /dev/null ~/.ssh/id_rsa
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+    - name: connect and pull
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && exit"
+    - name: cleanup
+      run: rm -rf ~/.ssh
