@@ -31,6 +31,46 @@ print_header() {
     echo -e "${BLUE}================================${NC}"
 }
 
+# Function to show usage
+show_usage() {
+    echo "Enhanced OpenInterest Monitor Scheduler"
+    echo ""
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    echo ""
+    echo "Commands:"
+    echo "  (no args)           - Start the enhanced monitor with default config"
+    echo "  --config FILE       - Start with specific config file"
+    echo "  attach              - Attach to running session"
+    echo "  stop                - Stop the enhanced monitor"
+    echo "  restart [--config]  - Restart the enhanced monitor"
+    echo "  status              - Check session status"
+    echo "  monitor             - Monitor and auto-restart"
+    echo "  help                - Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0                           # Start with default config (tokens_config.json)"
+    echo "  $0 --config mav.json         # Start with MAV token config"
+    echo "  $0 --config milk.json        # Start with MILK token config"
+    echo "  $0 restart --config h.json   # Restart with H token config"
+    echo "  $0 status                    # Check if monitor is running"
+    echo ""
+    echo "Available config files:"
+    echo "  tokens_config.json (default) - All tokens"
+    echo "  mav.json                     - MAV token only"
+    echo "  milk.json                    - MILK token only"
+    echo "  h.json                       - H token only"
+    echo "  more.json                    - MORE token only"
+    echo "  sahara.json                  - SAHARA token only"
+    echo "  dmc.json                     - DMC token only"
+    echo "  cudis.json                   - CUDIS token only"
+    echo ""
+    echo "Enhanced Features:"
+    echo "  📊 Change alerts only (no regular reports)"
+    echo "  📈 Increase/decrease indicators"
+    echo "  💰 Price and volume information"
+    echo "  📱 Enhanced Telegram notifications"
+}
+
 # Check if tmux is installed
 check_tmux() {
     if ! command -v tmux &> /dev/null; then
@@ -68,6 +108,29 @@ check_files() {
 
 # Main function
 main() {
+    local config_file="tokens_config.json"
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --config)
+                config_file="$2"
+                shift 2
+                ;;
+            *)
+                break
+                ;;
+        esac
+    done
+    
+    # Check if config file exists
+    if [ ! -f "$config_file" ]; then
+        print_error "Config file '$config_file' not found"
+        echo "Available config files:"
+        ls -1 *.json 2>/dev/null | grep -v "test_" || echo "No config files found"
+        exit 1
+    fi
+    
     print_header
     
     # Change to script directory
@@ -79,25 +142,27 @@ main() {
     check_files
     
     print_status "Starting enhanced OpenInterest monitor in tmux..."
+    print_status "Using config file: $config_file"
     
-    # Start the enhanced scheduler
-    if python3 enhanced_tmux_scheduler.py start; then
+    # Start the enhanced scheduler with config file
+    if python3 enhanced_tmux_scheduler.py start --config "$config_file"; then
         print_status "✅ Enhanced monitor started successfully!"
         echo ""
         echo "📱 Session name: enhanced_openinterest_scheduler"
+        echo "📄 Config file: $config_file"
         echo "🔗 To attach to the session: python3 enhanced_tmux_scheduler.py attach"
         echo "📊 To check status: python3 enhanced_tmux_scheduler.py status"
         echo "⏹️  To stop: python3 enhanced_tmux_scheduler.py stop"
-        echo "🔄 To restart: python3 enhanced_tmux_scheduler.py restart"
+        echo "🔄 To restart: python3 enhanced_tmux_scheduler.py restart --config $config_file"
         echo "🔍 To monitor: python3 enhanced_tmux_scheduler.py monitor"
         echo ""
-        print_status "The enhanced monitor will run every 15 minutes with regular data reports"
+        print_status "The enhanced monitor will check every 15 minutes and send alerts only when there are changes"
         echo ""
         echo "📊 Enhanced Features:"
-        echo "  • Regular data reports every 15 minutes"
-        echo "  • Current OI and average OI data"
+        echo "  • Change alerts only (no regular reports)"
+        echo "  • Increase/decrease indicators"
         echo "  • Price and volume information"
-        echo "  • Percentage change from average"
+        echo "  • Percentage change from previous value"
         echo "  • Enhanced Telegram notifications"
     else
         print_error "Failed to start enhanced monitor"
@@ -114,7 +179,8 @@ case "${1:-}" in
         python3 enhanced_tmux_scheduler.py stop
         ;;
     "restart")
-        python3 enhanced_tmux_scheduler.py restart
+        shift
+        python3 enhanced_tmux_scheduler.py restart "$@"
         ;;
     "status")
         python3 enhanced_tmux_scheduler.py status
@@ -123,25 +189,13 @@ case "${1:-}" in
         python3 enhanced_tmux_scheduler.py monitor
         ;;
     "help"|"-h"|"--help")
-        echo "Usage: $0 [command]"
-        echo ""
-        echo "Commands:"
-        echo "  (no args)  - Start the enhanced monitor"
-        echo "  attach     - Attach to running session"
-        echo "  stop       - Stop the enhanced monitor"
-        echo "  restart    - Restart the enhanced monitor"
-        echo "  status     - Check session status"
-        echo "  monitor    - Monitor and auto-restart"
-        echo "  help       - Show this help"
-        echo ""
-        echo "Enhanced Features:"
-        echo "  📊 Regular data reports every 15 minutes"
-        echo "  📈 Current OI and average OI data"
-        echo "  💰 Price and volume information"
-        echo "  📱 Enhanced Telegram notifications"
+        show_usage
         ;;
     "")
-        main
+        main "$@"
+        ;;
+    --config)
+        main "$@"
         ;;
     *)
         print_error "Unknown command: $1"

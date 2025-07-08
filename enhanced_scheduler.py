@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Enhanced Open Interest Monitor Scheduler
-Runs the open interest monitor at specified intervals and sends regular data updates to Telegram
+Runs the open interest monitor at specified intervals and sends alerts only when there are changes
 """
 
 import schedule
@@ -12,6 +12,7 @@ import sys
 import os
 import json
 import asyncio
+import argparse
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
@@ -26,25 +27,27 @@ logging.basicConfig(
 )
 
 class EnhancedScheduler:
-    def __init__(self):
+    def __init__(self, config_file: str = "tokens_config.json"):
+        self.config_file = config_file
         self.data_file = "open_interest_data.json"
         self.last_report_time = None
         self.monitoring_start_time = datetime.now()
+        self.previous_oi_values = {}  # Store previous OI values to detect changes
         
     def run_monitor_cycle(self):
-        """Run one monitoring cycle and collect data"""
+        """Run one monitoring cycle and check for changes"""
         try:
-            logging.info("Starting enhanced monitoring cycle...")
+            logging.info(f"Starting enhanced monitoring cycle with config: {self.config_file}")
             
             # Run the monitor for one cycle
             result = subprocess.run([
-                sys.executable, 'monitor.py', '--config', 'tokens_config.json'
+                sys.executable, 'monitor.py', '--config', self.config_file
             ], capture_output=True, text=True, timeout=300)  # 5 minute timeout
             
             if result.returncode == 0:
                 logging.info("Monitoring cycle completed successfully")
-                # Send regular data report
-                self.send_regular_data_report()
+                # Check for changes and send alerts
+                self.check_for_changes()
             else:
                 logging.error(f"Monitoring cycle failed: {result.stderr}")
                 
@@ -62,6 +65,91 @@ class EnhancedScheduler:
         except Exception as e:
             logging.error(f"Error loading data: {e}")
         return {}
+
+    def check_for_changes(self):
+        """Check for changes in Open Interest and send alerts"""
+        try:
+            # Load current data
+            data = self.load_current_data()
+            if not data:
+                logging.warning("No data available for change detection")
+                return
+            
+            # Check each token for changes
+            for symbol, records in data.items():
+                if not records:
+                    continue
+                
+                # Get latest record
+                latest_record = records[-1]
+                current_oi_value = float(latest_record.get('open_interest_value', 0))
+                
+                # Check if we have a previous value for this symbol
+                if symbol in self.previous_oi_values:
+                    previous_oi_value = self.previous_oi_values[symbol]
+                    
+                    # Calculate change
+                    change = current_oi_value - previous_oi_value
+                    change_percentage = (change / previous_oi_value * 100) if previous_oi_value > 0 else 0
+                    
+                    # Only send alert if there's a significant change (more than 1%)
+                    if abs(change_percentage) > 1.0:
+                        self.send_change_alert(symbol, latest_record, previous_oi_value, current_oi_value, change_percentage)
+                
+                # Update the previous value for next comparison
+                self.previous_oi_values[symbol] = current_oi_value
+                
+        except Exception as e:
+            logging.error(f"Error checking for changes: {e}")
+
+    def send_change_alert(self, symbol: str, latest_record: Dict, previous_value: float, current_value: float, change_percentage: float):
+        """Send alert for Open Interest change"""
+        try:
+            from telegram_service import send_telegram_message
+            
+            # Determine if it's an increase or decrease
+            if change_percentage > 0:
+                change_emoji = "📈"
+                change_type = "INCREASE"
+                change_direction = "↗️"
+            else:
+                change_emoji = "📉"
+                change_type = "DECREASE"
+                change_direction = "↘️"
+            
+            # Calculate averages for context
+            data = self.load_current_data()
+            averages = self.calculate_averages(data.get(symbol, []))
+            avg_oi_value = averages['avg_oi_value']
+            
+            # Calculate percentage from average
+            avg_change = ((current_value - avg_oi_value) / avg_oi_value * 100) if avg_oi_value > 0 else 0
+            
+            # Build alert message
+            alert_message = f"🚨 <b>OPEN INTEREST CHANGE ALERT</b> 🚨\n\n"
+            alert_message += f"<b>{symbol}</b>\n"
+            alert_message += f"📊 {change_emoji} <b>{change_type}</b> {change_direction}\n"
+            alert_message += f"📈 Change: {change_percentage:+.2f}%\n"
+            alert_message += f"💰 Previous OI: {self.format_number(previous_value)}\n"
+            alert_message += f"💰 Current OI: {self.format_number(current_value)}\n"
+            alert_message += f"📊 vs 24h Avg: {avg_change:+.1f}%\n"
+            alert_message += f"💵 Price: ${latest_record.get('price', 0):.4f}\n"
+            alert_message += f"📊 Volume 24h: {self.format_number(float(latest_record.get('volume_24h', 0)))}\n"
+            
+            # Add funding rate if available
+            funding_rate = latest_record.get('funding_rate', 0)
+            if funding_rate != 0:
+                alert_message += f"💸 Funding: {funding_rate:.4f}%\n"
+            
+            alert_message += f"\n⏰ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
+            alert_message += f"🔄 Next check in: 15 minutes\n"
+            
+            # Send the alert
+            asyncio.run(send_telegram_message(alert_message))
+            logging.info(f"Change alert sent for {symbol}: {change_percentage:+.2f}%")
+            
+        except Exception as e:
+            logging.error(f"Failed to send change alert: {e}")
 
     def calculate_averages(self, symbol_data: List) -> Dict:
         """Calculate average OI for a symbol"""
@@ -110,82 +198,6 @@ class EnhancedScheduler:
         else:
             return f"{number:.2f}"
 
-    def send_regular_data_report(self):
-        """Send regular data report to Telegram"""
-        try:
-            from telegram_service import send_telegram_message
-            
-            # Load current data
-            data = self.load_current_data()
-            if not data:
-                logging.warning("No data available for report")
-                return
-            
-            # Get current time
-            now = datetime.now()
-            self.last_report_time = now
-            
-            # Calculate uptime
-            uptime = now - self.monitoring_start_time
-            uptime_str = f"{uptime.days}d {uptime.seconds//3600}h {(uptime.seconds//60)%60}m"
-            
-            # Build report message
-            report_message = f"📊 <b>Open Interest Regular Report</b>\n\n"
-            report_message += f"⏰ Time: {now.strftime('%Y-%m-%d %H:%M:%S')}\n"
-            report_message += f"🕐 Uptime: {uptime_str}\n"
-            report_message += f"📈 Monitored Tokens: {len(data)}\n\n"
-            
-            # Add data for each token
-            for symbol, records in data.items():
-                if not records:
-                    continue
-                
-                # Get latest record
-                latest_record = records[-1]
-                
-                # Calculate averages
-                averages = self.calculate_averages(records)
-                
-                # Format the data
-                current_oi = float(latest_record.get('open_interest', 0))
-                current_oi_value = float(latest_record.get('open_interest_value', 0))
-                avg_oi = averages['avg_oi']
-                avg_oi_value = averages['avg_oi_value']
-                
-                # Calculate percentage change from average
-                if avg_oi_value > 0:
-                    pct_change = ((current_oi_value - avg_oi_value) / avg_oi_value) * 100
-                    pct_str = f"({pct_change:+.1f}%)"
-                else:
-                    pct_str = "(N/A)"
-                
-                # Add token data to report
-                report_message += f"<b>{symbol}</b>\n"
-                report_message += f"  📊 Current OI: {self.format_number(current_oi_value)} {pct_str}\n"
-                report_message += f"  📈 Avg OI (24h): {self.format_number(avg_oi_value)}\n"
-                report_message += f"  💰 Price: ${latest_record.get('price', 0):.4f}\n"
-                report_message += f"  📊 Volume 24h: {self.format_number(float(latest_record.get('volume_24h', 0)))}\n"
-                
-                # Add funding rate if available
-                funding_rate = latest_record.get('funding_rate', 0)
-                if funding_rate != 0:
-                    report_message += f"  💸 Funding: {funding_rate:.4f}%\n"
-                
-                report_message += "\n"
-            
-            # Add summary
-            total_oi_value = sum(float(records[-1].get('open_interest_value', 0)) for records in data.values() if records)
-            report_message += f"<b>📊 Summary</b>\n"
-            report_message += f"Total OI Value: {self.format_number(total_oi_value)}\n"
-            report_message += f"Next report in: 15 minutes\n"
-            
-            # Send the message
-            asyncio.run(send_telegram_message(report_message))
-            logging.info("Regular data report sent to Telegram")
-            
-        except Exception as e:
-            logging.error(f"Failed to send regular data report: {e}")
-
     def send_startup_message(self):
         """Send a startup message to Telegram"""
         try:
@@ -193,7 +205,7 @@ class EnhancedScheduler:
             
             startup_message = f"🚀 <b>Enhanced Open Interest Monitor Started</b>\n\n"
             startup_message += f"⏰ Monitoring every 15 minutes\n"
-            startup_message += f"📊 Regular data reports enabled\n"
+            startup_message += f"📊 Change alerts only (no regular reports)\n"
             startup_message += f"📅 Started on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
             startup_message += f"✅ Enhanced scheduler is running..."
             
@@ -214,7 +226,7 @@ class EnhancedScheduler:
             shutdown_message = f"🛑 <b>Enhanced Open Interest Monitor Stopped</b>\n\n"
             shutdown_message += f"📅 Stopped on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
             shutdown_message += f"⏱️ Total uptime: {uptime_str}\n"
-            shutdown_message += f"⚠️ Regular monitoring will no longer run"
+            shutdown_message += f"⚠️ Change monitoring will no longer run"
             
             asyncio.run(send_telegram_message(shutdown_message))
             logging.info("Enhanced shutdown message sent to Telegram")
@@ -225,7 +237,7 @@ class EnhancedScheduler:
         """Main function to run the enhanced scheduler"""
         print("🚀 Starting Enhanced Open Interest Monitor Scheduler...")
         print("⏰ Monitoring every 15 minutes")
-        print("📊 Regular data reports every 15 minutes")
+        print("📊 Change alerts only (no regular reports)")
         print("📱 Telegram notifications enabled")
         print("🔄 Enhanced scheduler is running... (Press Ctrl+C to stop)")
         
@@ -254,7 +266,11 @@ class EnhancedScheduler:
 
 def main():
     """Main entry point"""
-    scheduler = EnhancedScheduler()
+    parser = argparse.ArgumentParser(description="Enhanced Open Interest Monitor Scheduler")
+    parser.add_argument("--config", default="tokens_config.json", help="Path to the tokens configuration file")
+    args = parser.parse_args()
+
+    scheduler = EnhancedScheduler(config_file=args.config)
     scheduler.run()
 
 if __name__ == "__main__":

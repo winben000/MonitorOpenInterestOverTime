@@ -10,6 +10,7 @@ import os
 import time
 import signal
 import logging
+import argparse
 from datetime import datetime
 
 # Add the current directory to Python path
@@ -26,8 +27,9 @@ logging.basicConfig(
 )
 
 class EnhancedTmuxScheduler:
-    def __init__(self, session_name="enhanced_openinterest_scheduler"):
+    def __init__(self, session_name="enhanced_openinterest_scheduler", config_file="tokens_config.json"):
         self.session_name = session_name
+        self.config_file = config_file
         self.script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "enhanced_scheduler.py")
         
     def send_telegram_notification(self, message):
@@ -66,7 +68,7 @@ class EnhancedTmuxScheduler:
     
     def create_session(self):
         """Create new tmux session"""
-        logging.info(f"Creating enhanced tmux session: {self.session_name}")
+        logging.info(f"Creating enhanced tmux session: {self.session_name} with config: {self.config_file}")
         
         # Create session and run the enhanced scheduler
         command = f"new-session -d -s {self.session_name} -c {os.getcwd()}"
@@ -76,15 +78,15 @@ class EnhancedTmuxScheduler:
             logging.error(f"Failed to create tmux session: {stderr}")
             return False
         
-        # Send the startup command to the session
-        startup_cmd = f"send-keys -t {self.session_name} 'python3 {self.script_path}' Enter"
+        # Send the startup command to the session with config file
+        startup_cmd = f"send-keys -t {self.session_name} 'python3 {self.script_path} --config {self.config_file}' Enter"
         success, stdout, stderr = self.tmux_command(startup_cmd)
         
         if not success:
             logging.error(f"Failed to start enhanced scheduler in tmux: {stderr}")
             return False
         
-        logging.info("Enhanced tmux session created and scheduler started")
+        logging.info(f"Enhanced tmux session created and scheduler started with config: {self.config_file}")
         return True
     
     def attach_session(self):
@@ -160,18 +162,30 @@ class EnhancedTmuxScheduler:
 
 def main():
     """Main function"""
-    scheduler = EnhancedTmuxScheduler()
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description="Enhanced OpenInterest Monitor Scheduler - TMux Manager")
+    parser.add_argument("command", nargs="?", help="Command to execute")
+    parser.add_argument("--config", default="tokens_config.json", help="Path to the tokens configuration file")
+    args = parser.parse_args()
     
-    if len(sys.argv) < 2:
+    # Create scheduler with config file
+    scheduler = EnhancedTmuxScheduler(config_file=args.config)
+    
+    if not args.command:
         print("🚀 Enhanced OpenInterest Monitor Scheduler - TMux Manager")
         print("")
         print("Usage:")
-        print("  python3 enhanced_tmux_scheduler.py start     - Start the enhanced monitor in tmux")
-        print("  python3 enhanced_tmux_scheduler.py attach    - Attach to running session")
-        print("  python3 enhanced_tmux_scheduler.py stop      - Stop the enhanced monitor")
-        print("  python3 enhanced_tmux_scheduler.py restart   - Restart the enhanced monitor")
-        print("  python3 enhanced_tmux_scheduler.py status    - Check session status")
-        print("  python3 enhanced_tmux_scheduler.py monitor   - Monitor and auto-restart")
+        print("  python3 enhanced_tmux_scheduler.py start [--config FILE]     - Start the enhanced monitor in tmux")
+        print("  python3 enhanced_tmux_scheduler.py attach                    - Attach to running session")
+        print("  python3 enhanced_tmux_scheduler.py stop                      - Stop the enhanced monitor")
+        print("  python3 enhanced_tmux_scheduler.py restart [--config FILE]   - Restart the enhanced monitor")
+        print("  python3 enhanced_tmux_scheduler.py status                    - Check session status")
+        print("  python3 enhanced_tmux_scheduler.py monitor                   - Monitor and auto-restart")
+        print("")
+        print("Examples:")
+        print("  python3 enhanced_tmux_scheduler.py start                     - Start with default config")
+        print("  python3 enhanced_tmux_scheduler.py start --config mav.json   - Start with MAV config")
+        print("  python3 enhanced_tmux_scheduler.py start --config milk.json  - Start with MILK config")
         print("")
         print("Features:")
         print("  📊 Regular data reports every 15 minutes")
@@ -181,7 +195,7 @@ def main():
         print("")
         return
     
-    command = sys.argv[1].lower()
+    command = args.command.lower()
     
     if command == "start":
         if scheduler.session_exists():
@@ -190,6 +204,7 @@ def main():
             if scheduler.create_session():
                 print("✅ Enhanced OpenInterest monitor started successfully in tmux session")
                 print(f"📱 Session name: {scheduler.session_name}")
+                print(f"📄 Config file: {scheduler.config_file}")
                 print("🔗 Use 'attach' to connect to the session")
                 print("📊 Use 'status' to check if it's running")
                 print("⏰ Enhanced monitor runs every 15 minutes with regular reports")
@@ -217,6 +232,7 @@ def main():
     elif command == "restart":
         if scheduler.restart_session():
             print("✅ Enhanced OpenInterest monitor restarted successfully")
+            print(f"📄 Config file: {scheduler.config_file}")
         else:
             print("❌ Failed to restart enhanced monitor")
             sys.exit(1)
@@ -225,6 +241,7 @@ def main():
         status = scheduler.get_session_status()
         if status == "running":
             print("✅ Enhanced OpenInterest monitor is running")
+            print(f"📄 Config file: {scheduler.config_file}")
         elif status == "empty":
             print("⚠️  Enhanced session exists but is empty")
         else:

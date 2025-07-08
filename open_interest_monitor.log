@@ -868,3 +868,42 @@
 2025-07-07 13:02:13,566 - INFO - Telegram message sent successfully
 2025-07-07 13:02:13,568 - INFO - Starting monitoring cycle...
 2025-07-07 13:02:14,586 - INFO - Monitoring cycle completed. Processed 1 symbols, generated 0 alerts
+2025-07-08 10:59:14,040 - INFO - Loaded token config: {'exchange': 'bybit', 'symbols': ['MILKUSDT', 'HUSDT', 'MOREUSDT', 'SAHARAUSDT', 'DMCUSDT', 'MAVUSDT', 'CUDISUSDT']}
+2025-07-08 10:59:14,042 - INFO - Extracted symbols list: ['MILKUSDT', 'HUSDT', 'MOREUSDT', 'SAHARAUSDT', 'DMCUSDT', 'MAVUSDT', 'CUDISUSDT']
+2025-07-08 10:59:14,042 - INFO - Monitoring specific tokens: ['MILKUSDT', 'HUSDT', 'MOREUSDT', 'SAHARAUSDT', 'DMCUSDT', 'MAVUSDT', 'CUDISUSDT']
+2025-07-08 10:59:14,043 - INFO - Loaded historical data for 5 symbols
+2025-07-08 10:59:14,043 - INFO - Starting Open Interest Monitor...
+2025-07-08 10:59:14,043 - INFO - Monitoring interval: 900 seconds
+2025-07-08 10:59:14,043 - INFO - Spike threshold: 5.0%
+2025-07-08 10:59:15,150 - INFO - Telegram message sent successfully
+2025-07-08 10:59:15,151 - INFO - Starting monitoring cycle...
+2025-07-08 10:59:21,200 - INFO - Telegram message sent successfully
+2025-07-08 10:59:21,201 - INFO - Sent alert for MILKUSDT on binance: -13.74%
+2025-07-08 10:59:22,112 - INFO - Telegram message sent successfully
+2025-07-08 10:59:22,113 - INFO - Sent alert for HUSDT on binance: -48.51%
+2025-07-08 10:59:23,034 - INFO - Telegram message sent successfully
+2025-07-08 10:59:23,035 - INFO - Sent alert for SAHARAUSDT on binance: -9.91%
+2025-07-08 10:59:23,970 - INFO - Telegram message sent successfully
+2025-07-08 10:59:23,970 - INFO - Sent alert for DMCUSDT on binance: -58.62%
+2025-07-08 10:59:24,896 - INFO - Telegram message sent successfully
+2025-07-08 10:59:24,938 - INFO - Monitoring cycle completed. Processed 5 symbols, generated 4 alerts
+2025-07-08 11:34:27,086 - INFO - Loaded token config: {'exchange': 'binance', 'symbol': 'MAV/USDT'}
+2025-07-08 11:34:27,086 - INFO - Extracted single symbol: ['MAVUSDT']
+2025-07-08 11:34:27,086 - INFO - Monitoring specific tokens: ['MAVUSDT']
+2025-07-08 11:34:27,087 - INFO - Loaded historical data for 5 symbols
+2025-07-08 11:34:27,087 - INFO - Starting Open Interest Monitor...
+2025-07-08 11:34:27,087 - INFO - Monitoring interval: 900 seconds
+2025-07-08 11:34:27,087 - INFO - Spike threshold: 5.0%
+2025-07-08 11:34:57,360 - ERROR - Error sending Telegram message: Connection timeout to host https://api.telegram.org/bot7689898274:AAFpBgsn4w1MNyIlEk1ygBvy0ep_VJhjdGE/sendMessage
+2025-07-08 11:34:57,361 - INFO - Starting monitoring cycle...
+2025-07-08 11:34:58,656 - INFO - Monitoring cycle completed. Processed 1 symbols, generated 0 alerts
+2025-07-08 11:35:28,360 - INFO - Loaded token config: {'exchange': 'binance', 'symbol': 'MAV/USDT'}
+2025-07-08 11:35:28,360 - INFO - Extracted single symbol: ['MAVUSDT']
+2025-07-08 11:35:28,360 - INFO - Monitoring specific tokens: ['MAVUSDT']
+2025-07-08 11:35:28,360 - INFO - Loaded historical data for 5 symbols
+2025-07-08 11:35:28,361 - INFO - Starting Open Interest Monitor...
+2025-07-08 11:35:28,361 - INFO - Monitoring interval: 900 seconds
+2025-07-08 11:35:28,361 - INFO - Spike threshold: 5.0%
+2025-07-08 11:35:30,076 - INFO - Telegram message sent successfully
+2025-07-08 11:35:30,077 - INFO - Starting monitoring cycle...
+2025-07-08 11:35:31,506 - INFO - Monitoring cycle completed. Processed 1 symbols, generated 0 alerts

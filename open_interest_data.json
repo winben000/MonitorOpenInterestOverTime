@@ -3,16 +3,6 @@
     {
       "symbol": "DMCUSDT",
       "exchange": "binance",
-      "open_interest": 871585260.0,
-      "open_interest_value": 7880002.33566,
-      "timestamp": "2025-07-02T16:16:53.826970",
-      "price": 0.009041,
-      "volume_24h": 270861503.992358,
-      "funding_rate": -0.00046012
-    },
-    {
-      "symbol": "DMCUSDT",
-      "exchange": "binance",
       "open_interest": 879281549.0,
       "open_interest_value": 8092907.376996,
       "timestamp": "2025-07-02T16:32:00.425740",
@@ -99,19 +89,19 @@
       "price": 0.009022,
       "volume_24h": 274293236.345583,
       "funding_rate": -0.00046012
+    },
+    {
+      "symbol": "DMCUSDT",
+      "exchange": "binance",
+      "open_interest": 557311190.0,
+      "open_interest_value": 3295381.06647,
+      "timestamp": "2025-07-08T10:59:18.214756",
+      "price": 0.005913,
+      "volume_24h": 38119357.650187,
+      "funding_rate": -1.896e-05
     }
   ],
   "MILKUSDT": [
-    {
-      "symbol": "MILKUSDT",
-      "exchange": "binance",
-      "open_interest": 36152082.0,
-      "open_interest_value": 1720116.0615599998,
-      "timestamp": "2025-07-02T16:16:51.316226",
-      "price": 0.04758,
-      "volume_24h": 5106515.29022,
-      "funding_rate": 5e-05
-    },
     {
       "symbol": "MILKUSDT",
       "exchange": "binance",
@@ -201,19 +191,19 @@
       "price": 0.04851,
       "volume_24h": 4919102.78439,
       "funding_rate": 5e-05
+    },
+    {
+      "symbol": "MILKUSDT",
+      "exchange": "binance",
+      "open_interest": 32636857.0,
+      "open_interest_value": 1499989.94772,
+      "timestamp": "2025-07-08T10:59:15.899658",
+      "price": 0.04596,
+      "volume_24h": 2920685.26686,
+      "funding_rate": 5e-05
     }
   ],
   "HUSDT": [
-    {
-      "symbol": "HUSDT",
-      "exchange": "binance",
-      "open_interest": 439709088.0,
-      "open_interest_value": 33905967.77568,
-      "timestamp": "2025-07-02T16:16:52.062388",
-      "price": 0.07711,
-      "volume_24h": 1741305076.63899,
-      "funding_rate": -0.01473118
-    },
     {
       "symbol": "HUSDT",
       "exchange": "binance",
@@ -303,19 +293,19 @@
       "price": 0.0796,
       "volume_24h": 1880652842.89806,
       "funding_rate": -0.0119164
+    },
+    {
+      "symbol": "HUSDT",
+      "exchange": "binance",
+      "open_interest": 259503146.0,
+      "open_interest_value": 16815803.860799998,
+      "timestamp": "2025-07-08T10:59:16.601232",
+      "price": 0.0648,
+      "volume_24h": 326647060.71265,
+      "funding_rate": 1.25e-05
     }
   ],
   "SAHARAUSDT": [
-    {
-      "symbol": "SAHARAUSDT",
-      "exchange": "binance",
-      "open_interest": 320390782.0,
-      "open_interest_value": 24211931.39574,
-      "timestamp": "2025-07-02T16:16:53.075705",
-      "price": 0.07557,
-      "volume_24h": 243315366.1318,
-      "funding_rate": -0.00018115
-    },
     {
       "symbol": "SAHARAUSDT",
       "exchange": "binance",
@@ -405,39 +395,19 @@
       "price": 0.07553,
       "volume_24h": 227850487.43894,
       "funding_rate": -0.00012609
+    },
+    {
+      "symbol": "SAHARAUSDT",
+      "exchange": "binance",
+      "open_interest": 283989537.0,
+      "open_interest_value": 21742238.95272,
+      "timestamp": "2025-07-08T10:59:17.521339",
+      "price": 0.07656,
+      "volume_24h": 121228951.2724,
+      "funding_rate": 1.25e-05
     }
   ],
   "MAVUSDT": [
-    {
-      "symbol": "MAVUSDT",
-      "exchange": "binance",
-      "open_interest": 103168238.0,
-      "open_interest_value": 4176250.27424,
-      "timestamp": "2025-07-07T11:00:21.940614",
-      "price": 0.04048,
-      "volume_24h": 10164092.95611,
-      "funding_rate": 6.345e-05
-    },
-    {
-      "symbol": "MAVUSDT",
-      "exchange": "binance",
-      "open_interest": 103151317.0,
-      "open_interest_value": 4174533.79899,
-      "timestamp": "2025-07-07T11:01:46.300627",
-      "price": 0.04047,
-      "volume_24h": 10162768.89816,
-      "funding_rate": 6.345e-05
-    },
-    {
-      "symbol": "MAVUSDT",
-      "exchange": "binance",
-      "open_interest": 102876891.0,
-      "open_interest_value": 4170629.16114,
-      "timestamp": "2025-07-07T11:16:52.689907",
-      "price": 0.04054,
-      "volume_24h": 10149753.03859,
-      "funding_rate": 6.345e-05
-    },
     {
       "symbol": "MAVUSDT",
       "exchange": "binance",
@@ -507,6 +477,36 @@
       "price": 0.04007,
       "volume_24h": 10528580.60312,
       "funding_rate": 6.345e-05
+    },
+    {
+      "symbol": "MAVUSDT",
+      "exchange": "binance",
+      "open_interest": 104304079.0,
+      "open_interest_value": 4018836.1638700003,
+      "timestamp": "2025-07-08T10:59:18.900778",
+      "price": 0.03853,
+      "volume_24h": 9029392.76517,
+      "funding_rate": -7.617e-05
+    },
+    {
+      "symbol": "MAVUSDT",
+      "exchange": "binance",
+      "open_interest": 103619904.0,
+      "open_interest_value": 3987293.90592,
+      "timestamp": "2025-07-08T11:34:58.146066",
+      "price": 0.03848,
+      "volume_24h": 9086534.0148,
+      "funding_rate": -7.617e-05
+    },
+    {
+      "symbol": "MAVUSDT",
+      "exchange": "binance",
+      "open_interest": 103606797.0,
+      "open_interest_value": 3983681.34465,
+      "timestamp": "2025-07-08T11:35:31.266526",
+      "price": 0.03845,
+      "volume_24h": 9087603.643,
+      "funding_rate": -7.617e-05
     }
   ]
 }

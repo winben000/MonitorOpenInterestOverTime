@@ -7,7 +7,8 @@ A real-time cryptocurrency open interest monitoring system that tracks open inte
 - 🔍 **Real-time Monitoring**: Tracks open interest changes for specified tokens
 - 📊 **Multi-Exchange Support**: Monitors both Binance and Bybit
 - 🚨 **Smart Alerts**: Sends Telegram notifications when open interest spikes exceed threshold
-- 📱 **Regular Reports**: Sends comprehensive data reports every 15 minutes
+- 📈 **Change Detection**: Sends alerts only when there are changes in Open Interest
+- 📊 **Direction Indicators**: Clearly shows whether changes are increases or decreases
 - ⚡ **Configurable**: Customizable monitoring intervals and spike thresholds
 - 📱 **Telegram Integration**: Instant notifications with detailed alert information
 - 🎯 **Token-Specific Monitoring**: Monitor individual tokens or multiple tokens simultaneously
@@ -86,7 +87,7 @@ Create JSON files to specify which tokens to monitor:
 
 ### Enhanced Scheduler (Recommended)
 
-The enhanced scheduler provides regular data reports every 15 minutes plus spike alerts:
+The enhanced scheduler provides change alerts only when there are changes in Open Interest:
 
 ```bash
 # Start enhanced monitor
@@ -177,30 +178,21 @@ Use the specific token monitoring script:
 
 ## Telegram Notifications
 
-### Regular Data Reports (Every 15 minutes)
+### Change Alerts (Only when there are changes)
 ```
-📊 Open Interest Regular Report
+🚨 OPEN INTEREST CHANGE ALERT 🚨
+
+MAVUSDT
+📊 📈 INCREASE ↗️
+📈 Change: +12.34%
+💰 Previous OI: 2.45M
+💰 Current OI: 2.75M
+📊 vs 24h Avg: +8.7%
+💵 Price: $0.0789
+📊 Volume 24h: 12.34M
 
 ⏰ Time: 2025-07-02 15:30:00
-🕐 Uptime: 2d 5h 30m
-📈 Monitored Tokens: 7
-
-MILKUSDT
-  📊 Current OI: 2.45M (+12.3%)
-  📈 Avg OI (24h): 2.18M
-  💰 Price: $0.1234
-  📊 Volume 24h: 15.67M
-  💸 Funding: 0.0123%
-
-HUSDT
-  📊 Current OI: 1.23M (-5.2%)
-  📈 Avg OI (24h): 1.30M
-  💰 Price: $0.0456
-  📊 Volume 24h: 8.90M
-
-📊 Summary
-Total OI Value: 7.35M
-Next report in: 15 minutes
+🔄 Next check in: 15 minutes
 ```
 
 ### Spike Alert Format
