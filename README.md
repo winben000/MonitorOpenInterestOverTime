@@ -1,15 +1,18 @@
 # Open Interest Monitor
 
-A real-time cryptocurrency open interest monitoring system that tracks open interest spikes on Binance and Bybit exchanges and sends alerts via Telegram.
+A real-time cryptocurrency open interest monitoring system that tracks open interest spikes on Binance and Bybit exchanges and sends alerts via Telegram. The enhanced version also sends regular data reports every 15 minutes.
 
 ## Features
 
 - 🔍 **Real-time Monitoring**: Tracks open interest changes for specified tokens
 - 📊 **Multi-Exchange Support**: Monitors both Binance and Bybit
 - 🚨 **Smart Alerts**: Sends Telegram notifications when open interest spikes exceed threshold
+- 📱 **Regular Reports**: Sends comprehensive data reports every 15 minutes
 - ⚡ **Configurable**: Customizable monitoring intervals and spike thresholds
 - 📱 **Telegram Integration**: Instant notifications with detailed alert information
 - 🎯 **Token-Specific Monitoring**: Monitor individual tokens or multiple tokens simultaneously
+- 🔄 **Persistent Operation**: TMux-based sessions that survive disconnections
+- 🛡️ **Auto-restart**: Automatic recovery from failures
 
 ## Prerequisites
 
@@ -17,6 +20,7 @@ A real-time cryptocurrency open interest monitoring system that tracks open inte
 - Telegram Bot Token
 - Binance API Key (optional)
 - Bybit API Key (optional)
+- TMux (for persistent operation)
 
 ## Installation
 
@@ -80,6 +84,28 @@ Create JSON files to specify which tokens to monitor:
 
 ## Usage
 
+### Enhanced Scheduler (Recommended)
+
+The enhanced scheduler provides regular data reports every 15 minutes plus spike alerts:
+
+```bash
+# Start enhanced monitor
+chmod +x start_enhanced_scheduler.sh
+./start_enhanced_scheduler.sh
+
+# Check status
+python3 enhanced_tmux_scheduler.py status
+
+# Attach to session
+python3 enhanced_tmux_scheduler.py attach
+
+# Stop monitor
+python3 enhanced_tmux_scheduler.py stop
+
+# Restart monitor
+python3 enhanced_tmux_scheduler.py restart
+```
+
 ### Basic Usage
 
 **Monitor specific tokens:**
@@ -123,29 +149,61 @@ python3 monitor.py
 }
 ```
 
-### Running Multiple Monitors
+### Individual Token Monitoring
 
-**Option 1: Single monitor for multiple tokens (recommended)**
+Use the specific token monitoring script:
+
 ```bash
-python3 monitor.py --config tokens_config.json
+# List available tokens
+./monitor_specific_token.sh list
+
+# Start monitoring a specific token
+./monitor_specific_token.sh start milk
+./monitor_specific_token.sh start h
+./monitor_specific_token.sh start mav
+
+# Check status
+./monitor_specific_token.sh status milk
+
+# View logs
+./monitor_specific_token.sh logs milk
+
+# Stop monitoring
+./monitor_specific_token.sh stop milk
+
+# Create new token config
+./monitor_specific_token.sh create btc
 ```
 
-**Option 2: Individual monitors for each token**
-```bash
-python3 monitor.py --config milk.json &
-python3 monitor.py --config h.json &
-python3 monitor.py --config more.json &
-# ... etc
+## Telegram Notifications
+
+### Regular Data Reports (Every 15 minutes)
+```
+📊 Open Interest Regular Report
+
+⏰ Time: 2025-07-02 15:30:00
+🕐 Uptime: 2d 5h 30m
+📈 Monitored Tokens: 7
+
+MILKUSDT
+  📊 Current OI: 2.45M (+12.3%)
+  📈 Avg OI (24h): 2.18M
+  💰 Price: $0.1234
+  📊 Volume 24h: 15.67M
+  💸 Funding: 0.0123%
+
+HUSDT
+  📊 Current OI: 1.23M (-5.2%)
+  📈 Avg OI (24h): 1.30M
+  💰 Price: $0.0456
+  📊 Volume 24h: 8.90M
+
+📊 Summary
+Total OI Value: 7.35M
+Next report in: 15 minutes
 ```
 
-**Option 3: Use the provided script**
-```bash
-./run_all_monitors.sh
-```
-
-## Telegram Alerts
-
-### Individual Alert Format
+### Spike Alert Format
 ```
 🚨 OPEN INTEREST ALERT 🚨
 
@@ -161,113 +219,226 @@ Time: 2025-07-02 10:45:23
 ⚡ HIGH VOLATILITY DETECTED! ⚡
 ```
 
-### Summary Alert Format
-```
-📊 OPEN INTEREST MONITORING SUMMARY
-
-🔍 Monitored Symbols: 7
-🚨 Alerts Generated: 2
-
-BYBIT:
-  🚨 MILKUSDT: +45.7%
-  ⚠️ HUSDT: +32.1%
-```
-
 ### Severity Levels
 - **LOW**: 1-30% change
 - **MEDIUM**: 30-50% change  
 - **HIGH**: 50%+ change
 
+## TMux Session Management
+
+### Session Information
+- **Enhanced Session**: `enhanced_openinterest_scheduler` (recommended)
+- **Individual Sessions**: `oi-milk`, `oi-h`, `oi-mav`, etc.
+- **Runs**: Every 15 minutes
+- **Persistent**: Survives disconnections
+- **Auto-restart**: On failures
+
+### TMux Commands
+
+```bash
+# List all sessions
+tmux list-sessions
+
+# Attach to enhanced session
+tmux attach-session -t enhanced_openinterest_scheduler
+
+# Attach to specific token session
+tmux attach-session -t oi-milk
+
+# Detach from session
+# Press Ctrl+B, then D
+
+# Kill a session
+tmux kill-session -t oi-milk
+
+# Kill all sessions
+tmux kill-server
+```
+
+### Session Windows and Panes
+- `Ctrl+B, C` - Create new window
+- `Ctrl+B, N` - Next window
+- `Ctrl+B, P` - Previous window
+- `Ctrl+B, %` - Split vertically
+- `Ctrl+B, "` - Split horizontally
+- `Ctrl+B, arrow keys` - Navigate between panes
+
+## Monitoring and Logs
+
+### View Logs
+```bash
+# Enhanced scheduler logs
+tail -f enhanced_scheduler.log
+
+# TMux scheduler logs
+tail -f enhanced_tmux_scheduler.log
+
+# Monitor logs
+tail -f open_interest_monitor.log
+
+# Real-time monitoring
+tail -f enhanced_scheduler.log -f enhanced_tmux_scheduler.log
+```
+
+### Check Status
+```bash
+# Check enhanced monitor status
+python3 enhanced_tmux_scheduler.py status
+
+# Check all tmux sessions
+tmux list-sessions
+
+# Check specific token status
+./monitor_specific_token.sh status milk
+```
+
+## Server Setup
+
+### Ubuntu Server Setup
+
+1. **Upload files to server:**
+   ```bash
+   scp -r OpenInterest/ ubuntu@your-server-ip:/home/ubuntu/
+   ```
+
+2. **SSH into server and setup:**
+   ```bash
+   ssh ubuntu@your-server-ip
+   cd OpenInterest
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   sudo apt-get update
+   sudo apt-get install tmux python3-pip
+   pip3 install -r requirements.txt
+   ```
+
+4. **Configure environment:**
+   ```bash
+   nano .env
+   # Fill in your Telegram bot token and chat ID
+   ```
+
+5. **Start enhanced monitor:**
+   ```bash
+   chmod +x start_enhanced_scheduler.sh
+   ./start_enhanced_scheduler.sh
+   ```
+
+### SystemD Service (Optional)
+
+For automatic startup on boot:
+
+```bash
+# Create systemd service
+sudo nano /etc/systemd/system/openinterest.service
+```
+
+Add this content:
+```ini
+[Unit]
+Description=OpenInterest Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/OpenInterest
+ExecStart=/home/ubuntu/OpenInterest/start_enhanced_scheduler.sh
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable openinterest
+sudo systemctl start openinterest
+sudo systemctl status openinterest
+```
+
 ## Project Structure
 
 ```
 OpenInterest/
-├── monitor.py              # Main monitoring script
-├── config.py               # Configuration settings
-├── models.py               # Data models
-├── exchange_service.py     # Exchange API services
-├── telegram_service.py     # Telegram alert service
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── .env                   # Environment variables
-├── tokens_config.json     # Example multi-token config
-├── mav.json              # Example single token config
-├── run_all_monitors.sh   # Script to run multiple monitors
-└── test_*.py             # Test scripts
+├── monitor.py                    # Main monitoring script
+├── enhanced_scheduler.py         # Enhanced scheduler with regular reports
+├── enhanced_tmux_scheduler.py    # TMux manager for enhanced scheduler
+├── start_enhanced_scheduler.sh   # Startup script for enhanced monitor
+├── monitor_specific_token.sh     # Individual token monitoring script
+├── config.py                     # Configuration settings
+├── models.py                     # Data models
+├── exchange_service.py           # Exchange API services
+├── telegram_service.py           # Telegram alert service
+├── requirements.txt              # Python dependencies
+├── README.md                     # This file
+├── .env                          # Environment variables
+├── tokens_config.json            # Multi-token configuration
+├── mav.json                      # Single token configuration
+├── milk.json, h.json, etc.       # Individual token configs
+├── enhanced_scheduler.log        # Enhanced scheduler logs
+├── enhanced_tmux_scheduler.log   # TMux scheduler logs
+├── open_interest_monitor.log     # Main monitoring logs
+└── open_interest_data.json       # Historical data storage
 ```
-
-## API Endpoints Used
-
-### Binance
-- Open Interest: `/fapi/v1/openInterest`
-- 24hr Ticker: `/fapi/v1/ticker/24hr`
-- Funding Rate: `/fapi/v1/fundingRate`
-
-### Bybit
-- Open Interest: `/v5/market/open-interest`
-- Tickers: `/v5/market/tickers`
-- Funding History: `/v5/market/funding/history`
-
-## Logging
-
-The monitor creates detailed logs in:
-- Console output
-- `open_interest_monitor.log` file
-
-Log levels include:
-- INFO: Normal operations
-- WARNING: API errors for individual tokens
-- ERROR: Critical errors
-
-## Data Storage
-
-Historical data is stored in:
-- `open_interest_data.json`: Historical open interest data
-- Data is automatically cleaned up after 24 hours
 
 ## Troubleshooting
 
 ### Common Issues
 
-1. **Telegram not sending messages**
-   - Verify `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` are correct
-   - Ensure the bot has permission to send messages to the chat
-
-2. **API rate limits**
-   - Increase `MONITORING_INTERVAL` to reduce API calls
-   - Add API keys for higher rate limits
-
-3. **Token not found**
-   - Verify token symbols are correct for the exchange
-   - Check if the token has futures trading available
-
-### Testing
-
-Run the test scripts to verify setup:
+#### 1. Enhanced Monitor Not Starting
 ```bash
-python3 test_token_loading.py
-python3 test_token_names.py
+# Check if files exist
+ls -la enhanced_scheduler.py enhanced_tmux_scheduler.py
+
+# Check Python dependencies
+python3 -c "import schedule, requests, ccxt"
+
+# Check tmux installation
+which tmux
 ```
 
-## Contributing
+#### 2. No Regular Reports
+```bash
+# Check if enhanced monitor is running
+python3 enhanced_tmux_scheduler.py status
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+# Check logs
+tail -f enhanced_scheduler.log
+
+# Restart if needed
+python3 enhanced_tmux_scheduler.py restart
+```
+
+#### 3. Permission Issues
+```bash
+# Fix permissions
+chmod +x *.sh
+chmod 644 .env
+```
+
+#### 4. Session Not Starting
+```bash
+# Check if tmux is installed
+which tmux
+
+# Check Python dependencies
+python3 -c "import schedule, requests, ccxt"
+
+# Check environment file
+ls -la .env
+```
+
+## API Endpoints Used
+
+- **Binance**: Public API for open interest data
+- **Bybit**: Public API for open interest data
+- **Telegram Bot API**: For sending notifications
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Disclaimer
-
-This software is for educational and informational purposes only. Cryptocurrency trading involves risk, and past performance does not guarantee future results. Always do your own research and consider consulting with a financial advisor before making investment decisions.
-
-## Support
-
-For issues and questions:
-- Create an issue on GitHub
-- Check the troubleshooting section
-- Review the logs for error details 
+This project is for educational and personal use. Please ensure compliance with exchange API terms of service. 
